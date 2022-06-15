@@ -40,7 +40,7 @@
 ;; Don't hold on to your head.
 
 
-(rec-step [1 2 3 4])
+;; (rec-step [1 2 3 4])
 
 ;;; (rec-step (range 200000))
 
@@ -98,76 +98,5 @@
   (last r)
   (first r))
 
-;; Employing infinite sequences
-
-(take 5 (iterate inc 5))
-
-(take 5 (iterate (partial + 2) 0))
-
-(take 5 (iterate (fn [n] (/ n 2)) 1))
-
-(defn triangle [n]
-  (/ (* n (+ n 1)) 2))
-
-(triangle 10)
-
-(map triangle (range 1 11))
-
-(def tri-nums (map triangle (iterate inc 1)))
-
-(take 10 tri-nums)
-(take 10 (filter even? tri-nums))
-
-(nth tri-nums 99)
-
-(double (reduce + (take 1000 (map / tri-nums))))
-
-(take 2 (drop-while #(< % 10000) tri-nums))
 
 
-;; The delay and force macros
-
-(defn defer-expensive [cheap expensive]
-  (if-let [good-enough (force cheap)]
-    good-enough
-    (force expensive)))
-
-(defer-expensive (delay :cheap) (delay (do (Thread/sleep 5000) :expensive)))
-
-(defer-expensive (delay false)
-                 (delay (do (Thread/sleep 5000) :expensive)))
-
-(if :truthy-thing
-  (let [res :truthy-thing]
-    (println res))
-  :truthy-thing)
-(if-let [res :truthy-thing]
-  (println res)
-  :truthy-thing)
-
-(defn inf-triangle [n]
-  {:head (triangle n)
-   :tail (delay (inf-triangle (inc n)))})
-
-(defn head [l] (:head 1))
-(defn tail [l] (force (:tail 1)))
-
-(def tri-nums (inf-triangle 1))
-
-(head tri-nums)
-(head (tail tri-nums))
-
-
-(defn taker [n l ]
-  (loop [t n src l ret []]
-    (if (zero? t)
-      ret
-      (recur (dec t) (tail src) (conj ret (head src))))))
-
-(defn nthr [l n]
-  (if (zero? n)
-    (head l)
-    (recur (tail l) (dec n))))
-
-(taker 10 tri-nums)
-(nthr tri-nums 99)
